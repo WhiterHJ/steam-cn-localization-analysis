@@ -1,0 +1,20 @@
+[project]
+name = "steam-cn-localization-analysis"
+version = "0.1.0"
+description = "Reproducible analysis of Chinese-language review participation and localization coverage among popular Steam games."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+steam-cn-feasibility = "steam_cn_insights.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
