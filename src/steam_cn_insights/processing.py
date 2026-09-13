@@ -60,6 +60,15 @@ def load_and_prepare_snapshot(path: Path) -> pd.DataFrame:
     frame = pd.read_csv(path, encoding="utf-8-sig")
     if frame.empty:
         raise ValueError("Snapshot contains no game records")
+    if "sample_origin" not in frame:
+        frame["sample_origin"] = "chart"
+    if "curated_reason" not in frame:
+        frame["curated_reason"] = ""
+    frame["curated_reason"] = frame["curated_reason"].fillna("")
+    allowed_origins = {"chart", "curated_contrast"}
+    unexpected_origins = set(frame["sample_origin"].dropna()) - allowed_origins
+    if unexpected_origins:
+        raise ValueError(f"Unexpected sample origins: {sorted(unexpected_origins)}")
 
     for column in BOOLEAN_COLUMNS:
         frame[column] = frame[column].map(_parse_boolean).astype("boolean")
@@ -78,10 +87,18 @@ def load_and_prepare_snapshot(path: Path) -> pd.DataFrame:
     frame["chart_membership"] = "Both charts"
     frame.loc[frame["mostplayed_rank"].isna(), "chart_membership"] = "Top sellers only"
     frame.loc[frame["topselling_rank"].isna(), "chart_membership"] = "Most played only"
-    frame["analysis_eligible"] = (
+    curated_mask = frame["sample_origin"].eq("curated_contrast")
+    frame.loc[curated_mask, "chart_membership"] = "Curated comparison"
+    frame["sample_origin_label"] = frame["sample_origin"].map(
+        {"chart": "每日热门榜", "curated_contrast": "精选对照池"}
+    )
+    frame["review_threshold_eligible"] = (
         (frame["all_review_count"] >= MIN_ALL_REVIEWS)
         & (frame["chinese_review_count"] >= MIN_CHINESE_REVIEWS)
         & (frame["non_chinese_review_count"] > 0)
+    )
+    frame["analysis_eligible"] = (
+        frame["sample_origin"].eq("chart") & frame["review_threshold_eligible"]
     )
     frame["localization_status"] = frame["supports_simplified_chinese"].map(
         {True: "支持简体中文", False: "未标注简体中文"}
@@ -111,9 +128,15 @@ def load_and_prepare_snapshot(path: Path) -> pd.DataFrame:
         if not non_null.between(0, 1).all():
             raise ValueError(f"{column} contains a value outside [0, 1]")
 
-    return frame.sort_values(["best_chart_rank", "appid"], na_position="last").reset_index(
-        drop=True
+    frame["_sample_origin_order"] = frame["sample_origin"].map(
+        {"chart": 0, "curated_contrast": 1}
     )
+    prepared = frame.sort_values(
+        ["_sample_origin_order", "best_chart_rank", "appid"],
+        ascending=[True, True, True],
+        na_position="last",
+    ).drop(columns="_sample_origin_order")
+    return prepared.reset_index(drop=True)
 
 
 def build_data_model(project_root: Path) -> tuple[pd.DataFrame, dict[str, object]]:

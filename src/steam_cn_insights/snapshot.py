@@ -25,6 +25,66 @@ def _load_chart_games(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
+def _load_curated_apps(path: Path) -> list[dict[str, Any]]:
+    """Load the intentionally selected comparison pool used only for exploration."""
+
+    if not path.exists():
+        return []
+    with path.open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    if not isinstance(payload, list):
+        raise ValueError("Curated comparison config must contain a JSON list")
+
+    required = {"appid", "name_hint", "selection_reason"}
+    seen: set[int] = set()
+    for item in payload:
+        if not isinstance(item, dict) or not required.issubset(item):
+            raise ValueError(
+                "Each curated comparison entry needs appid, name_hint, and selection_reason"
+            )
+        appid = int(item["appid"])
+        if appid in seen:
+            raise ValueError(f"Duplicate curated comparison appid: {appid}")
+        seen.add(appid)
+    return payload
+
+
+def _merge_candidates(
+    chart_games: list[dict[str, str]], curated_apps: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Keep chart membership primary and append non-overlapping curated cases."""
+
+    merged: list[dict[str, Any]] = []
+    chart_appids: set[int] = set()
+    for game in chart_games:
+        appid = int(game["appid"])
+        chart_appids.add(appid)
+        merged.append(
+            {
+                **game,
+                "sample_origin": "chart",
+                "curated_reason": "",
+            }
+        )
+
+    for game in curated_apps:
+        appid = int(game["appid"])
+        if appid in chart_appids:
+            continue
+        merged.append(
+            {
+                "appid": appid,
+                "name": str(game["name_hint"]),
+                "mostplayed_rank": None,
+                "topselling_rank": None,
+                "chart_count": 0,
+                "sample_origin": "curated_contrast",
+                "curated_reason": str(game["selection_reason"]),
+            }
+        )
+    return merged
+
+
 def _serialize(value: Any) -> Any:
     if isinstance(value, list):
         return " | ".join(str(item) for item in value)
@@ -62,7 +122,11 @@ def run_snapshot_collection(
     collected_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     snapshot_date = cache_date or collected_at[:10]
     output_dir = project_root / "data" / "interim"
-    candidates = _load_chart_games(output_dir / "chart_games.csv")
+    chart_candidates = _load_chart_games(output_dir / "chart_games.csv")
+    curated_candidates = _load_curated_apps(
+        project_root / "config" / "curated_comparison_apps.json"
+    )
+    candidates = _merge_candidates(chart_candidates, curated_candidates)
     if limit is not None:
         candidates = candidates[:limit]
 
@@ -110,6 +174,8 @@ def run_snapshot_collection(
                 "mostplayed_rank": candidate.get("mostplayed_rank") or None,
                 "topselling_rank": candidate.get("topselling_rank") or None,
                 "chart_count": int(candidate["chart_count"]),
+                "sample_origin": candidate["sample_origin"],
+                "curated_reason": candidate["curated_reason"],
                 "snapshot_date": snapshot_date,
                 "collected_at_utc": collected_at,
             }
@@ -169,6 +235,8 @@ def run_snapshot_collection(
         "mostplayed_rank",
         "topselling_rank",
         "chart_count",
+        "sample_origin",
+        "curated_reason",
         "snapshot_date",
         "collected_at_utc",
     ]
@@ -184,6 +252,12 @@ def run_snapshot_collection(
         "collected_at_utc": collected_at,
         "snapshot_date": snapshot_date,
         "candidate_app_count": len(candidates),
+        "chart_candidate_count": sum(
+            candidate["sample_origin"] == "chart" for candidate in candidates
+        ),
+        "curated_candidate_count": sum(
+            candidate["sample_origin"] == "curated_contrast" for candidate in candidates
+        ),
         "valid_game_count": len(records),
         "excluded_count": len(exclusions),
         "minimum_required": minimum_required,

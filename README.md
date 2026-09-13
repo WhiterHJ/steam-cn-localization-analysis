@@ -1,11 +1,11 @@
-# Steam 中文评论与本地化观察站
+# Steam 中文支持与评论观察站
 
-> 谁在被中文玩家看见？——追踪 Steam 热门游戏的简体中文支持、中文评论参与度与评价落差。
+> 热门 Steam 游戏支持中文吗？中文评论者如何参与，又给出了怎样的评价？
 
 [![Quality checks](https://github.com/WhiterHJ/steam-cn-localization-analysis/actions/workflows/quality.yml/badge.svg)](https://github.com/WhiterHJ/steam-cn-localization-analysis/actions/workflows/quality.yml)
 [![Refresh data](https://github.com/WhiterHJ/steam-cn-localization-analysis/actions/workflows/update-data.yml/badge.svg)](https://github.com/WhiterHJ/steam-cn-localization-analysis/actions/workflows/update-data.yml)
 
-这是一个自动采集、自动分析并公开展示的专题数据产品，不要求访客上传数据。它读取 Steam 全球畅销榜和最常游玩榜，构建游戏级公开快照，并生成无需后端的交互式中文数据故事。
+这是一个自动采集、自动分析并公开展示的专题数据产品，不要求访客上传数据。它读取 Steam 全球畅销榜和最常游玩榜，构建游戏级公开快照，并生成无需后端的交互式中文数据故事。访客可以直接查询游戏、点击表头排序，并浏览单独标注的精选本地化对照案例。
 
 ## 首期发现
 
@@ -24,6 +24,7 @@
 - “中文评论”指评论时选择的语言，不等同于玩家国籍或所在地区。
 - 评论数量用于衡量公开评论参与度，不等同于销量、玩家数或收入。
 - 项目分析的是进入所选 Steam 榜单的热门游戏，不能代表全部 Steam 游戏。
+- 精选对照池是人为挑选的知名案例，只用于检索和个案观察，不进入总体比例、排行榜或统计检验。
 - 观察性数据只能说明相关关系，不能证明增加简体中文支持会导致销量或好评率变化。
 
 ## 公开成果
@@ -50,6 +51,7 @@
 - [x] 建立生产数据模型与公开快照
 - [x] 完成描述统计、组间检验与结论边界审查
 - [x] 构建并在桌面/移动端验收交互式数据故事网站
+- [x] 增加可排序游戏检索表与独立的精选本地化对照池
 - [x] 创建远程仓库并启用 GitHub Pages
 - [x] 发布首个 Release
 

@@ -62,6 +62,10 @@ def _public_game_records(frame: pd.DataFrame) -> list[dict[str, Any]]:
         "topselling_rank",
         "best_chart_rank",
         "chart_membership",
+        "sample_origin",
+        "sample_origin_label",
+        "curated_reason",
+        "review_threshold_eligible",
         "analysis_eligible",
     ]
     records: list[dict[str, Any]] = []
@@ -72,6 +76,9 @@ def _public_game_records(frame: pd.DataFrame) -> list[dict[str, Any]]:
                 "localization_status",
                 "genres",
                 "chart_membership",
+                "sample_origin",
+                "sample_origin_label",
+                "curated_reason",
             } and not isinstance(value, (bool, np.bool_)) else value
             for field, value in zip(fields, row, strict=True)
         }
@@ -80,18 +87,21 @@ def _public_game_records(frame: pd.DataFrame) -> list[dict[str, Any]]:
             item["supports_simplified_chinese"]
         )
         item["is_free"] = bool(item["is_free"])
+        item["review_threshold_eligible"] = bool(item["review_threshold_eligible"])
         item["analysis_eligible"] = bool(item["analysis_eligible"])
         records.append(item)
     return records
 
 
 def analyze_snapshot(frame: pd.DataFrame) -> dict[str, Any]:
-    eligible = frame.loc[frame["analysis_eligible"]].copy()
+    chart_frame = frame.loc[frame["sample_origin"].eq("chart")].copy()
+    curated_frame = frame.loc[frame["sample_origin"].eq("curated_contrast")].copy()
+    eligible = chart_frame.loc[chart_frame["analysis_eligible"]].copy()
     supported = eligible.loc[eligible["supports_simplified_chinese"]]
     unsupported = eligible.loc[~eligible["supports_simplified_chinese"]]
 
-    support_rate = float(frame["supports_simplified_chinese"].mean())
-    cn_review_coverage = float((frame["chinese_review_count"] > 0).mean())
+    support_rate = float(chart_frame["supports_simplified_chinese"].mean())
+    cn_review_coverage = float((chart_frame["chinese_review_count"] > 0).mean())
     median_cn_share = float(eligible["chinese_review_share"].median())
     median_gap = float(eligible["chinese_vs_non_chinese_gap"].median())
 
@@ -149,6 +159,10 @@ def analyze_snapshot(frame: pd.DataFrame) -> dict[str, Any]:
             "snapshot_date": latest_date,
             "collected_at_utc": collected_at,
             "scope": "Union of Steam global Top Sellers and Most Played top 100 charts",
+            "explorer_scope": (
+                "Chart sample plus a purposively selected comparison pool; "
+                "curated cases are excluded from aggregate and inferential results"
+            ),
             "minimum_all_reviews": MIN_ALL_REVIEWS,
             "minimum_chinese_reviews": MIN_CHINESE_REVIEWS,
             "primary_gap_definition": (
@@ -156,13 +170,17 @@ def analyze_snapshot(frame: pd.DataFrame) -> dict[str, Any]:
             ),
         },
         "kpis": {
-            "game_count": int(len(frame)),
+            "game_count": int(len(chart_frame)),
+            "total_browsable_count": int(len(frame)),
+            "curated_case_count": int(len(curated_frame)),
             "analysis_eligible_count": int(len(eligible)),
             "simplified_chinese_support_count": int(
-                frame["supports_simplified_chinese"].sum()
+                chart_frame["supports_simplified_chinese"].sum()
             ),
             "simplified_chinese_support_rate": round(support_rate, 6),
-            "games_with_chinese_reviews": int((frame["chinese_review_count"] > 0).sum()),
+            "games_with_chinese_reviews": int(
+                (chart_frame["chinese_review_count"] > 0).sum()
+            ),
             "chinese_review_coverage_rate": round(cn_review_coverage, 6),
             "median_chinese_review_share": round(median_cn_share, 6),
             "median_chinese_vs_non_chinese_gap": round(median_gap, 6),
@@ -176,6 +194,7 @@ def analyze_snapshot(frame: pd.DataFrame) -> dict[str, Any]:
             "中文评论指评论所选语言，不代表玩家国籍或所在地。",
             "评论数不等于销量、收入或活跃玩家数。",
             "样本只覆盖采集时点进入两个 Steam 全球榜单前100名的游戏。",
+            "精选对照池是有意挑选的案例，只用于检索与个案观察，不进入任何总体比例、排行榜或组间检验。",
             "评价差异是描述性关联，不能证明本地化造成了评价变化。",
             "全语言汇总包含中文评论；主差值因此改用中文与非中文评价比较。",
         ],

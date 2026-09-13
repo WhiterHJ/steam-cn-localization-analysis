@@ -1,9 +1,33 @@
 "use strict";
 
-const state = { data: null, scatterFilter: "all" };
+const state = {
+  data: null,
+  scatterFilter: "all",
+  tableSort: { key: "best_chart_rank", direction: "asc" }
+};
 const number = new Intl.NumberFormat("zh-CN");
 const percent = (value, digits = 1) => `${(value * 100).toFixed(digits)}%`;
 const points = (value, digits = 1) => `${value >= 0 ? "+" : ""}${(value * 100).toFixed(digits)}pp`;
+const sortLabels = {
+  name: "游戏名",
+  sample_origin_label: "样本来源",
+  best_chart_rank: "最佳名次",
+  supports_simplified_chinese: "中文支持",
+  chinese_review_count: "中文评论数",
+  chinese_review_share: "评论占比",
+  chinese_positive_rate: "中文好评率",
+  chinese_vs_non_chinese_gap: "评价落差"
+};
+const defaultSortDirections = {
+  name: "asc",
+  sample_origin_label: "asc",
+  best_chart_rank: "asc",
+  supports_simplified_chinese: "asc",
+  chinese_review_count: "desc",
+  chinese_review_share: "desc",
+  chinese_positive_rate: "desc",
+  chinese_vs_non_chinese_gap: "asc"
+};
 
 function setText(id, value) {
   document.getElementById(id).textContent = value;
@@ -18,6 +42,7 @@ function escapeHtml(value) {
 function renderKpis(data) {
   const k = data.kpis;
   setText("snapshot-date", `数据快照：${data.metadata.snapshot_date} · 每日更新设计`);
+  setText("purpose-curated-count", number.format(k.curated_case_count));
   setText("kpi-games", number.format(k.game_count));
   setText("kpi-support", percent(k.simplified_chinese_support_rate));
   setText("kpi-support-count", `${number.format(k.simplified_chinese_support_count)} 款标注支持`);
@@ -112,31 +137,70 @@ function renderRankings(data) {
   renderBarList("gap-ranking", data.largest_negative_gaps, "chinese_vs_non_chinese_gap", value => points(value), true);
 }
 
+function compareGames(first, second) {
+  const { key, direction } = state.tableSort;
+  const firstValue = first[key];
+  const secondValue = second[key];
+  const firstMissing = firstValue === null || firstValue === undefined || firstValue === "";
+  const secondMissing = secondValue === null || secondValue === undefined || secondValue === "";
+  if (firstMissing && secondMissing) return first.name.localeCompare(second.name, "zh-CN");
+  if (firstMissing) return 1;
+  if (secondMissing) return -1;
+
+  let comparison;
+  if (typeof firstValue === "string") {
+    comparison = firstValue.localeCompare(secondValue, "zh-CN", { numeric: true });
+  } else {
+    comparison = Number(firstValue) - Number(secondValue);
+  }
+  if (comparison === 0) comparison = first.name.localeCompare(second.name, "zh-CN");
+  return direction === "asc" ? comparison : -comparison;
+}
+
+function updateSortHeaders() {
+  document.querySelectorAll(".sort-button").forEach(button => {
+    const active = button.dataset.sortKey === state.tableSort.key;
+    const header = button.closest("th");
+    const indicator = button.querySelector("span");
+    button.classList.toggle("active", active);
+    header.setAttribute(
+      "aria-sort",
+      active ? (state.tableSort.direction === "asc" ? "ascending" : "descending") : "none"
+    );
+    indicator.textContent = active ? (state.tableSort.direction === "asc" ? "↑" : "↓") : "↕";
+  });
+}
+
 function renderTable() {
   const search = document.getElementById("game-search").value.trim().toLocaleLowerCase();
+  const origin = document.getElementById("origin-filter").value;
   const support = document.getElementById("support-filter").value;
   const chart = document.getElementById("chart-filter").value;
   const games = state.data.games.filter(game => {
     if (search && !game.name.toLocaleLowerCase().includes(search)) return false;
+    if (origin !== "all" && game.sample_origin !== origin) return false;
     if (support === "supported" && !game.supports_simplified_chinese) return false;
     if (support === "unsupported" && game.supports_simplified_chinese) return false;
     if (chart !== "all" && game.chart_membership !== chart) return false;
     return true;
-  });
+  }).sort(compareGames);
   document.getElementById("game-table-body").innerHTML = games.slice(0, 100).map(game => {
     const gap = game.chinese_vs_non_chinese_gap;
-    const eligible = gap !== null && game.analysis_eligible;
+    const eligible = gap !== null && game.review_threshold_eligible;
     return `<tr>
       <td><a href="https://store.steampowered.com/app/${game.appid}" target="_blank" rel="noreferrer">${escapeHtml(game.name)}</a></td>
+      <td><span class="source-badge ${game.sample_origin === "curated_contrast" ? "curated" : ""}" title="${escapeHtml(game.curated_reason || "当日 Steam 全球榜单样本")}">${escapeHtml(game.sample_origin_label)}</span></td>
       <td>${game.best_chart_rank ?? "—"}</td>
       <td><span class="badge ${game.supports_simplified_chinese ? "" : "muted"}">${game.supports_simplified_chinese ? "支持" : "未标注"}</span></td>
       <td>${number.format(game.chinese_review_count)}</td>
       <td>${game.chinese_review_share === null ? "—" : percent(game.chinese_review_share)}</td>
       <td>${game.chinese_positive_rate === null ? "—" : percent(game.chinese_positive_rate)}</td>
-      <td class="${eligible && gap < 0 ? "gap-negative" : "gap-positive"}">${eligible ? points(gap) : "样本不足"}</td>
+      <td class="${eligible && gap < 0 ? "gap-negative" : "gap-positive"}" title="${game.sample_origin === "curated_contrast" ? "仅作个案观察，不进入总体统计" : ""}">${eligible ? points(gap) : "评论不足"}</td>
     </tr>`;
   }).join("");
-  setText("table-status", `符合当前筛选：${games.length} 款${games.length > 100 ? "（表格先显示前100款）" : ""}`);
+  updateSortHeaders();
+  const directionLabel = state.tableSort.direction === "asc" ? "升序" : "降序";
+  setText("table-status", `符合当前筛选：${games.length} 款 · 按${sortLabels[state.tableSort.key]}${directionLabel}${games.length > 100 ? " · 先显示前100款" : ""}`);
 }
 
 function bindControls() {
@@ -148,8 +212,28 @@ function bindControls() {
       renderScatter();
     });
   });
-  ["game-search", "support-filter", "chart-filter"].forEach(id => {
+  ["game-search", "origin-filter", "support-filter", "chart-filter"].forEach(id => {
     document.getElementById(id).addEventListener(id === "game-search" ? "input" : "change", renderTable);
+  });
+  document.querySelectorAll(".sort-button").forEach(button => {
+    button.addEventListener("click", () => {
+      const key = button.dataset.sortKey;
+      if (state.tableSort.key === key) {
+        state.tableSort.direction = state.tableSort.direction === "asc" ? "desc" : "asc";
+      } else {
+        state.tableSort = { key, direction: defaultSortDirections[key] };
+      }
+      renderTable();
+    });
+  });
+  document.getElementById("show-curated").addEventListener("click", () => {
+    document.getElementById("game-search").value = "";
+    document.getElementById("origin-filter").value = "curated_contrast";
+    document.getElementById("support-filter").value = "unsupported";
+    document.getElementById("chart-filter").value = "all";
+    state.tableSort = { key: "chinese_review_count", direction: "desc" };
+    renderTable();
+    document.querySelector(".table-shell").scrollIntoView({ behavior: "smooth", block: "start" });
   });
 }
 

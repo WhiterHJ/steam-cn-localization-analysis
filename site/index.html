@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Steam 热门游戏的简体中文支持、中文评论参与度与评价差异观察。">
-  <title>谁在被中文玩家看见？｜Steam 中文评论观察站</title>
+  <meta name="description" content="查看 Steam 热门游戏是否支持简体中文，以及中文评论参与度和评价差异。">
+  <title>热门游戏支持中文吗？｜Steam 中文支持观察站</title>
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
@@ -12,46 +12,59 @@
     <nav class="nav wrap" aria-label="主导航">
       <a class="brand" href="#top" aria-label="返回顶部">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span>STEAM 中文评论观察站</span>
+        <span>STEAM 中文支持观察站</span>
       </a>
       <div class="nav-links">
-        <a href="#landscape">全景</a>
-        <a href="#gaps">评价差异</a>
-        <a href="#explorer">游戏检索</a>
-        <a href="#method">方法</a>
+        <a href="#landscape">先看结论</a>
+        <a href="#gaps">异常游戏</a>
+        <a href="#explorer">查一款游戏</a>
+        <a href="#method">数据口径</a>
       </div>
     </nav>
 
     <div class="hero-grid wrap" id="top">
       <div class="hero-copy">
-        <p class="eyebrow">DAILY SNAPSHOT · PUBLIC DATA STORY</p>
-        <h1>热门，不等于<br><span>被同一种方式看见</span></h1>
-        <p class="dek">我们追踪 Steam 全球畅销榜与最常游玩榜，观察简体中文支持、中文评论参与度，以及中文与非中文评价之间的落差。</p>
+        <p class="eyebrow">这个网站回答什么？</p>
+        <h1>热门 Steam 游戏，<br><span>支持中文吗？</span></h1>
+        <p class="dek">每天追踪 Steam 全球畅销榜与最常游玩榜，回答三个具体问题：游戏有没有标注简体中文、中文评论占多少、中文与非中文评价是否存在明显落差。</p>
         <div class="hero-actions">
-          <a class="button primary" href="#landscape">查看数据</a>
-          <a class="button secondary" href="#method">先看口径</a>
+          <a class="button primary" href="#landscape">先看关键结论</a>
+          <a class="button secondary" href="#explorer">直接查游戏</a>
         </div>
       </div>
       <aside class="hero-note" aria-label="阅读提示">
         <span class="note-index">01</span>
-        <p>这里的“中文玩家”是一种便于阅读的简称。数据实际识别的是<strong>评论所选语言</strong>，不是国籍或所在地。</p>
+        <p>它不是游戏推荐榜，也不估算销量。你可以用它<strong>核对中文支持、发现评论异常、寻找值得进一步研究的游戏</strong>。</p>
+        <p>“中文评论”识别的是评论所选语言，不是玩家国籍或所在地。</p>
         <div class="freshness"><span class="pulse"></span><span id="snapshot-date">载入数据中…</span></div>
       </aside>
     </div>
   </header>
 
   <main>
+    <section class="purpose wrap" aria-labelledby="purpose-title">
+      <div class="purpose-heading">
+        <p class="eyebrow">打开页面后，你可以</p>
+        <h2 id="purpose-title">先查事实，再看差异</h2>
+      </div>
+      <div class="purpose-grid">
+        <article><span>01</span><h3>查中文支持</h3><p>搜索一款游戏，核对 Steam 商店当前是否标注简体中文。</p></article>
+        <article><span>02</span><h3>找反馈异常</h3><p>比较中文评论占比，以及中文和非中文好评率之间的落差。</p></article>
+        <article><span>03</span><h3>看未标注案例</h3><p>除每日热门榜外，另收录 <strong id="purpose-curated-count">—</strong> 款人工选取的知名对照游戏。</p></article>
+      </div>
+    </section>
+
     <section class="section wrap" id="landscape">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">THE LANDSCAPE</p>
-          <h2>热门榜单的中文可见度</h2>
+          <p class="eyebrow">01 · 先看全局</p>
+          <h2>热门榜里，中文支持有多普遍？</h2>
         </div>
         <p>榜单不是“全 Steam”。它更像一扇窗口：此刻最受关注的一批游戏，中文评论在其中留下了多深的痕迹？</p>
       </div>
 
       <div class="kpi-grid" aria-live="polite">
-        <article class="kpi"><span>有效游戏</span><strong id="kpi-games">—</strong><small>两榜合并去重</small></article>
+        <article class="kpi"><span>热门榜游戏</span><strong id="kpi-games">—</strong><small>两榜合并去重，不含精选对照池</small></article>
         <article class="kpi accent"><span>简体中文支持率</span><strong id="kpi-support">—</strong><small id="kpi-support-count">—</small></article>
         <article class="kpi"><span>出现中文评论</span><strong id="kpi-cn-coverage">—</strong><small id="kpi-cn-count">—</small></article>
         <article class="kpi warning"><span>典型评价落差</span><strong id="kpi-gap">—</strong><small>中文 − 非中文，中位数</small></article>
@@ -93,8 +106,8 @@
       <div class="wrap">
         <div class="section-heading inverse">
           <div>
-            <p class="eyebrow">TWO WAYS OF BEING SEEN</p>
-            <h2>参与度与评价，是两件事</h2>
+          <p class="eyebrow">02 · 找到异常游戏</p>
+          <h2>哪些游戏最受中文评论者关注？</h2>
           </div>
           <p>中文评论占比高，说明中文评论者更“可见”；评价落差大，则提示不同语言社区的体验或预期可能并不一致。</p>
         </div>
@@ -115,19 +128,33 @@
     <section class="section wrap" id="explorer">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">EXPLORE THE SAMPLE</p>
-          <h2>在样本里找一款游戏</h2>
+          <p class="eyebrow">03 · 查一款游戏</p>
+          <h2>同时浏览热门榜与精选对照案例</h2>
         </div>
-        <p>表格保留了榜单名次、语言支持和评论汇总。点击游戏名可前往 Steam 商店页核对。</p>
+        <p>点击任意表头即可升序或降序排列；点击游戏名可前往 Steam 商店页核对当前语言支持。</p>
+      </div>
+      <div class="sample-boundary">
+        <div><strong>两类数据，两个用途</strong><p><b>每日热门榜</b>进入页面上方的比例、排行和统计检验；<b>精选对照池</b>是人为挑选的知名案例，只用于检索和个案观察，绝不混入总体结论。</p></div>
+        <button type="button" id="show-curated">查看精选未标注中文案例</button>
       </div>
       <div class="explorer-controls">
         <label>搜索游戏<input id="game-search" type="search" placeholder="例如：PUBG、Elden Ring…"></label>
+        <label>样本来源<select id="origin-filter"><option value="all">全部可浏览游戏</option><option value="chart">每日热门榜</option><option value="curated_contrast">精选对照池</option></select></label>
         <label>中文支持<select id="support-filter"><option value="all">全部</option><option value="supported">支持简体中文</option><option value="unsupported">未标注简体中文</option></select></label>
-        <label>榜单来源<select id="chart-filter"><option value="all">全部</option><option value="Both charts">两个榜单</option><option value="Top sellers only">仅畅销榜</option><option value="Most played only">仅最常游玩榜</option></select></label>
+        <label>具体来源<select id="chart-filter"><option value="all">全部</option><option value="Both charts">两个榜单</option><option value="Top sellers only">仅畅销榜</option><option value="Most played only">仅最常游玩榜</option><option value="Curated comparison">精选对照池</option></select></label>
       </div>
       <div class="table-shell">
         <table>
-          <thead><tr><th>游戏</th><th>最佳名次</th><th>中文支持</th><th>中文评论</th><th>评论占比</th><th>中文好评率</th><th>评价落差</th></tr></thead>
+          <thead><tr>
+            <th scope="col" aria-sort="none"><button class="sort-button" data-sort-key="name">游戏<span aria-hidden="true">↕</span></button></th>
+            <th scope="col" aria-sort="none"><button class="sort-button" data-sort-key="sample_origin_label">样本来源<span aria-hidden="true">↕</span></button></th>
+            <th scope="col" aria-sort="ascending"><button class="sort-button active" data-sort-key="best_chart_rank">最佳名次<span aria-hidden="true">↑</span></button></th>
+            <th scope="col" aria-sort="none"><button class="sort-button" data-sort-key="supports_simplified_chinese">中文支持<span aria-hidden="true">↕</span></button></th>
+            <th scope="col" aria-sort="none"><button class="sort-button" data-sort-key="chinese_review_count">中文评论<span aria-hidden="true">↕</span></button></th>
+            <th scope="col" aria-sort="none"><button class="sort-button" data-sort-key="chinese_review_share">评论占比<span aria-hidden="true">↕</span></button></th>
+            <th scope="col" aria-sort="none"><button class="sort-button" data-sort-key="chinese_positive_rate">中文好评率<span aria-hidden="true">↕</span></button></th>
+            <th scope="col" aria-sort="none"><button class="sort-button" data-sort-key="chinese_vs_non_chinese_gap">评价落差<span aria-hidden="true">↕</span></button></th>
+          </tr></thead>
           <tbody id="game-table-body"></tbody>
         </table>
       </div>
@@ -137,8 +164,8 @@
     <section class="section method" id="method">
       <div class="wrap method-grid">
         <div>
-          <p class="eyebrow">METHODOLOGY</p>
-          <h2>一张图背后的口径</h2>
+          <p class="eyebrow">04 · 数据口径</p>
+          <h2>哪些能比较，哪些只能观察？</h2>
           <p>数据产品最重要的不是“图多”，而是别人能否复现、质疑并更新它。</p>
         </div>
         <div class="method-list">
@@ -146,6 +173,7 @@
           <article><span>02</span><div><h3>中文参与度</h3><p>简体中文评论数 ÷ 全语言评论数。它衡量评论语言构成，不是中国区收入占比。</p></div></article>
           <article><span>03</span><div><h3>评价落差</h3><p>简体中文好评率 − 非中文好评率。非中文计数由全语言汇总减去简体中文汇总得到。</p></div></article>
           <article><span>04</span><div><h3>稳健展示阈值</h3><p>至少 1,000 条全语言评论和 100 条简体中文评论；阈值减少极小样本造成的夸张波动。</p></div></article>
+          <article><span>05</span><div><h3>精选对照池</h3><p>人工选取若干知名、建池时未标注简体中文的游戏，并每日复核当前状态。它不是随机样本，不进入上方任何比例、排行榜或推断统计。</p></div></article>
         </div>
       </div>
       <div class="wrap limitations">
@@ -157,7 +185,7 @@
 
   <footer>
     <div class="wrap footer-grid">
-      <div><strong>Steam 中文评论观察站</strong><p>一个可复现、可更新、对结论边界诚实的数据分析作品。</p></div>
+      <div><strong>Steam 中文支持观察站</strong><p>查中文支持、看评论差异，也清楚知道结论能走多远。</p></div>
       <div><p>数据源：Steam 公开排行榜、商店信息与评论汇总接口。</p><p>本项目与 Valve 或 Steam 无隶属关系。</p></div>
     </div>
   </footer>

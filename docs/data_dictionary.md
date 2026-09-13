@@ -27,7 +27,11 @@
 | `topselling_rank` | nullable integer | 全球畅销榜名次 |
 | `best_chart_rank` | integer | 两个榜单中的最佳名次 |
 | `chart_membership` | string | 两榜、仅畅销榜或仅最常游玩榜 |
-| `analysis_eligible` | boolean | 是否达到稳健展示阈值 |
+| `sample_origin` | string | `chart` 表示每日热门榜；`curated_contrast` 表示精选对照池 |
+| `sample_origin_label` | string | 网站显示使用的中文样本来源标签 |
+| `curated_reason` | string | 精选案例的入池理由；热门榜游戏为空 |
+| `review_threshold_eligible` | boolean | 评论量是否达到稳健展示阈值，不考虑样本来源 |
+| `analysis_eligible` | boolean | 是否属于热门榜且达到稳健展示阈值；精选对照池始终为否 |
 | `snapshot_date` | date | 快照归属日期（UTC） |
 | `collected_at_utc` | timestamp | 采集完成时间（UTC） |
 
