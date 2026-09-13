@@ -28,7 +28,7 @@
 
 ## 公开成果
 
-- 交互网站：`https://whiterhj.github.io/steam-cn-localization-analysis/`（仓库发布后启用）
+- 交互网站：[在线访问](https://whiterhj.github.io/steam-cn-localization-analysis/)
 - 可复现的数据采集、清洗、统计分析与网站代码
 - [游戏级公开快照](data/published/snapshots)
 - [数据字典](docs/data_dictionary.md)、[指标口径](docs/methodology.md)和研究限制
@@ -50,7 +50,8 @@
 - [x] 建立生产数据模型与公开快照
 - [x] 完成描述统计、组间检验与结论边界审查
 - [x] 构建并在桌面/移动端验收交互式数据故事网站
-- [ ] 创建远程仓库、启用 GitHub Pages 并发布首个 Release
+- [x] 创建远程仓库并启用 GitHub Pages
+- [ ] 发布首个 Release
 
 可行性验证结果见[数据源可行性报告](docs/feasibility_report.md)。
 
