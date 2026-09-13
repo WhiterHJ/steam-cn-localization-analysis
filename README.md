@@ -51,7 +51,7 @@
 - [x] 完成描述统计、组间检验与结论边界审查
 - [x] 构建并在桌面/移动端验收交互式数据故事网站
 - [x] 创建远程仓库并启用 GitHub Pages
-- [ ] 发布首个 Release
+- [x] 发布首个 Release
 
 可行性验证结果见[数据源可行性报告](docs/feasibility_report.md)。
 
