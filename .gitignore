@@ -1,4 +1,5 @@
 .venv/
+*.egg-info/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -15,7 +16,6 @@ data/processed/*
 # Generated local output
 reports/figures/*
 !reports/figures/.gitkeep
-site/assets/data/*.json
 
 # Editors and OS
 .vscode/

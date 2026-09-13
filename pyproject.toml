@@ -3,10 +3,17 @@ name = "steam-cn-localization-analysis"
 version = "0.1.0"
 description = "Reproducible analysis of Chinese-language review participation and localization coverage among popular Steam games."
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "duckdb>=1.4,<2",
+    "numpy>=2.3,<3",
+    "pandas>=2.3,<4",
+    "pyarrow>=20,<24",
+    "scipy>=1.16,<2",
+]
 
 [project.scripts]
 steam-cn-feasibility = "steam_cn_insights.cli:main"
+steam-cn-data = "steam_cn_insights.cli:main"
 
 [build-system]
 requires = ["setuptools>=68"]

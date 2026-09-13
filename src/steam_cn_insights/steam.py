@@ -35,17 +35,33 @@ def fetch_app_details(
     *,
     refresh: bool = False,
 ) -> dict[str, Any]:
-    """Fetch and normalize public Steam store details for one application."""
+    """Fetch store details, preferring China and falling back to the US catalog."""
 
-    payload = fetch_json(
-        APP_DETAILS_URL,
-        {"appids": appid, "cc": "cn", "l": "english"},
-        cache_dir / f"appdetails_{appid}.json",
-        refresh=refresh,
-    )
-    app_payload = payload.get(str(appid))
-    if not isinstance(app_payload, dict) or not app_payload.get("success"):
-        raise FetchError(f"Steam appdetails returned no successful record for appid={appid}")
+    app_payload: dict[str, Any] | None = None
+    market_used: str | None = None
+    errors: list[str] = []
+    for market in ("cn", "us"):
+        cache_name = (
+            f"appdetails_{appid}.json" if market == "cn" else f"appdetails_{appid}_{market}.json"
+        )
+        payload = fetch_json(
+            APP_DETAILS_URL,
+            {"appids": appid, "cc": market, "l": "english"},
+            cache_dir / cache_name,
+            refresh=refresh,
+        )
+        candidate = payload.get(str(appid))
+        if isinstance(candidate, dict) and candidate.get("success"):
+            app_payload = candidate
+            market_used = market
+            break
+        errors.append(f"{market}: unsuccessful response")
+
+    if app_payload is None or market_used is None:
+        raise FetchError(
+            f"Steam appdetails returned no successful record for appid={appid} "
+            f"({'; '.join(errors)})"
+        )
 
     data = app_payload.get("data")
     if not isinstance(data, dict):
@@ -58,6 +74,8 @@ def fetch_app_details(
 
     return {
         "appid": appid,
+        "store_market": market_used,
+        "available_in_cn": market_used == "cn",
         "name": data.get("name"),
         "type": data.get("type"),
         "is_free": bool(data.get("is_free", False)),

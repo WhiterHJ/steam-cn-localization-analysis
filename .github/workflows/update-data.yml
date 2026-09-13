@@ -1,0 +1,57 @@
+name: Refresh Steam snapshot
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: steam-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --disable-pip-version-check -e .
+      - name: Collect current Steam charts
+        run: python -m steam_cn_insights charts --project-root . --refresh
+      - name: Build validated game snapshot
+        run: python -m steam_cn_insights snapshot --project-root . --refresh
+      - name: Build analysis and public data
+        run: python -m steam_cn_insights analyze --project-root .
+      - name: Run quality checks
+        run: python -m unittest discover -s tests -v
+      - name: Commit public snapshot
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/published/snapshots site/assets/data/latest.json
+          if git diff --cached --quiet; then
+            echo "No public data changes to commit."
+          else
+            git commit -m "data: refresh Steam snapshot"
+            git push
+          fi
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+      - name: Deploy current site
+        id: deployment
+        uses: actions/deploy-pages@v5
